@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Movie Recommendation</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+</head>
+<body>
+    <h1><CENTER>Movie Recommendation</CENTER></h1>
+    <form id="myform" method="post">
+        <CENTER><input type="text" name="top" placeholder="Enter how many recommendations you want"></CENTER><br><br>
+        <CENTER><input type="text" name="uid" placeholder="Enter your user id"></CENTER><br><br>
+    </form>
+    <CENTER><button id="predict">Predict</button></CENTER>
+    <h2 id="result"></h2>
+    <script type="text/javascript">
+        $(function() {
+            $('#predict').click(function() {
+            event.preventDefault();
+            var form_data = new FormData($('#myform')[0]);
+            console.log(form_data);
+            $.ajax({
+                type: 'POST',
+                url: '/predict',
+                data: form_data,
+                contentType: false,
+                processData: false,
+            }).done(function(data, textStatus, jqXHR){
+                $('#result').text(data);
+            }).fail(function(data){
+                alert('error!');
+            });
+            });
+        });
+    </script>
+</body>
+</html>
