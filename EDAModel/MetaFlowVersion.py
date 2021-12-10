@@ -13,17 +13,30 @@ assert os.environ.get('METAFLOW_DEFAULT_ENVIRONMENT', 'local') == 'local'
 
 # get recommendation for user
 def get_top_n(best_model, uid, n=10, location="/Users/yinxiangyang/desktop/code/final/data/"):
+    """
+    for user with uid, give him/her top n recommendations
+    :param best_model: svd model
+    :param uid: user id
+    :param n: top n
+    :param location: data path
+    :return: dataframe of recommendation
+    """
+    # load data
     movies_df = pd.read_csv(location+"movies.csv")
     ratings_df = pd.read_csv(location+"ratings.csv").drop("timestamp", axis=1)
+    # get all users
     users = list(ratings_df.userId.unique())
+    # conner case if userId not in database
     if uid not in users:
         print(f"user {uid} is not in the database.")
         print("Here are the top reviewed movies:")
+        # find the top viewed movies as recommendation
         top = ratings_df[["movieId", "rating"]].groupby("movieId").count().reset_index().sort_values("rating", ascending=False).reset_index(drop=True).drop("rating", axis=1)
         all_top = pd.merge(top, movies_df, left_on="movieId", right_on="movieId").drop("movieId", axis=1)
         recommendation = all_top.head(n).reset_index(drop=True)
         print(recommendation)
         return recommendation
+    # get the recommendation using svd model
     movies_df["estimate_rating"] = movies_df["movieId"].apply(lambda x: best_model.predict(uid, x).est)
     user_recommendation = movies_df.drop("movieId", axis=1)
     user_recommendation = user_recommendation.sort_values("estimate_rating", ascending=False)
@@ -33,17 +46,29 @@ def get_top_n(best_model, uid, n=10, location="/Users/yinxiangyang/desktop/code/
 
 
 # for movie
-def recommend_similar(mid, n = 10, location="/Users/yinxiangyang/desktop/code/final/data/"):
+def recommend_similar(mid, n=10, location="/Users/yinxiangyang/desktop/code/final/data/"):
+    """
+    find similar movies given a movie id
+    :param mid: movie id
+    :param n: n similar movies
+    :param location: data path
+    :return: dataframe of similar movies
+    """
+    # load datas
     movies_df = pd.read_csv(location+"movies.csv")
     ratings_df = pd.read_csv(location+"ratings.csv").drop("timestamp", axis=1)
     movies_list = list(movies_df["movieId"])
+    # if this movie is not in database, we cannot make predictions
     if mid not in movies_list:
         print("This is a new movie and we cannot find similar movie only based on it id.")
         return
-    print(f"Top {n} movies recommended based on Pearsons'R correlation")
+    # for movie in database, we calculate a cosine similarity
+    print(f"Top {n} movies recommended based on cosine similarity")
+    # split genres and encoding with one-hot encoding
     movies_df_encoding = pd.concat([movies_df[["movieId", "title"]], movies_df["genres"].str.get_dummies(sep='|').astype(np.int64)], axis=1)
     target_movie = movies_df_encoding[movies_df_encoding["movieId"]==mid].reset_index(drop=True)
     other_movie = movies_df_encoding[movies_df_encoding["movieId"]!=mid].reset_index(drop=True)
+    # calculate cosine similarity
     from scipy import spatial
     cosine_result = []
     for x in range(other_movie.shape[0]):
