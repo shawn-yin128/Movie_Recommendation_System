@@ -12,3 +12,19 @@ This project works well in notebook, but the problem is the model cannot be save
 
 #### The second project uses Singular Value Decomposition (SVD) with API in scikit-surprise package. You can find it in EDAModel directory.
 SVD is another algorithm for building a recommendation system, and surprise package has SVD API. Meanwhile, we still use pyspark to do the data exploration part and for the model part we use surprise to do most of the works. We also use flask to delpoy this model locally.
+
+## How to use:
+### data directory:
+ratings.csv is used for building, movies.csv is used to help find title and genres.
+### Deprecated directory:
+ALSCore.ipynb is the als model and it run correctly.
+don't use MetaFlowVersion.py, pyspark cannot work with that.
+### EDAModel directory:
+DataExplore.ipynb used pyspark to do basic exploration of dataset.
+SVDCore.ipynb is similar to ALSCore.ipynb but use SVD model instead.
+MetaFlowVersion.py works perfectly.
+svd is the best model.
+### app.py and templates:
+flask deployment
+### requirements.txt:
+environment requirements
