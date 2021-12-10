@@ -12,7 +12,7 @@ assert os.environ.get('METAFLOW_DEFAULT_ENVIRONMENT', 'local') == 'local'
 
 
 # get recommendation for user
-def get_top_n(best_model, uid, n=10, location="D:/py_movie_recommendation_system/data/"):
+def get_top_n(best_model, uid, n=10, location="/Users/yinxiangyang/desktop/code/final/data/"):
     movies_df = pd.read_csv(location+"movies.csv")
     ratings_df = pd.read_csv(location+"ratings.csv").drop("timestamp", axis=1)
     users = list(ratings_df.userId.unique())
@@ -33,7 +33,7 @@ def get_top_n(best_model, uid, n=10, location="D:/py_movie_recommendation_system
 
 
 # for movie
-def recommend_similar(mid, n = 10, location="D:/py_movie_recommendation_system/data/"):
+def recommend_similar(mid, n = 10, location="/Users/yinxiangyang/desktop/code/final/data/"):
     movies_df = pd.read_csv(location+"movies.csv")
     ratings_df = pd.read_csv(location+"ratings.csv").drop("timestamp", axis=1)
     movies_list = list(movies_df["movieId"])
@@ -78,7 +78,7 @@ class MovieRecommendation(FlowSpec):
         read data from file using pyspark
         """
         # set up data location and load data
-        location = "D:/py_movie_recommendation_system/data/"
+        location = "/Users/yinxiangyang/desktop/code/final/data/"
         self.movies_df = pd.read_csv(location + "movies.csv")
         self.ratings_df = pd.read_csv(location + "ratings.csv")
         self.links_df = pd.read_csv(location + "links.csv")
@@ -93,10 +93,10 @@ class MovieRecommendation(FlowSpec):
         make sure there is data inside the dataset
         """
         # a very basic and valid dataset should have data
-        assert self.movies_df.count() != 0
-        assert self.ratings_df.count() != 0
-        assert self.links_df.count() != 0
-        assert self.tags_df.count() != 0
+        assert self.movies_df.shape[0] != 0
+        assert self.ratings_df.shape[0] != 0
+        assert self.links_df.shape[0] != 0
+        assert self.tags_df.shape[0] != 0
 
         # next step is to run some basic preprocessing on the dataset
         self.next(self.preprocess_data)
@@ -109,14 +109,14 @@ class MovieRecommendation(FlowSpec):
             2. datatype convert
         """
         # drop na
-        movies_df_dropna = self.movies_df.dropna()
+        movies_df_dropna = self.ratings_df.dropna()
 
         # drop timestamp which is not useful for this model
-        movies_df_drop = movies_df_dropna.drop("timestamp")
+        movies_df_drop = movies_df_dropna.drop("timestamp", axis=1)
 
         # convert string to right type
-        user_movie = self.movie_ratings[["userId", "movieId"]].astype(int)
-        rating = self.movie_ratings["rating"].astype(float)
+        user_movie = movies_df_drop[["userId", "movieId"]].astype(int)
+        rating = movies_df_drop["rating"].astype(float)
         self.movie_ratings = pd.concat([user_movie, rating], axis=1)
 
         # next step is to split the dataset into train and test
